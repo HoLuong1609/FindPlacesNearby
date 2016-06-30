@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Find Places Nearby</string>
+    <string name="title_activity_maps">Find Places</string>
+</resources>
