@@ -11,13 +11,17 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.motthoidecode.findplacesnearby.R;
+
+import model.MapStateManager;
 
 /**
  * Created by Administrator on 6/30/2016.
@@ -45,9 +49,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
             } else {
                 if (mCurrentLocation == null) {
                     // Add a marker in Sydney and move the camera
-                    LatLng sydney = new LatLng(-34, 151);
-                    mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-                    mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+                    getSavedMapState();
                 } else {
                     // Add a marker in current Location and move the captureImage
                     LatLng mLatLng = new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude());
@@ -80,11 +82,35 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         setUpMap();
     }
 
+    @Override
+    public void onDestroy() {
+        if (mMap != null) {
+            MapStateManager mSM = new MapStateManager(getContext());
+            mSM.saveMapState(mMap);
+        }
+        super.onDestroy();
+    }
+
     private void setUpMap() {
         if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
         mMap.setMyLocationEnabled(true);
         mHandler.postDelayed(mGetMyLocation, 100);
+    }
+
+    private void getSavedMapState() {
+        MapStateManager mSM = new MapStateManager(getContext());
+        CameraPosition position = mSM.getSavedCameraPosition();
+        if (position != null) {
+            LatLng latLng = mSM.getSavedLatLng();
+            mCurrentLocation = new Location("");
+            mCurrentLocation.setLatitude(latLng.latitude);
+            mCurrentLocation.setLongitude(latLng.longitude);
+
+            mMap.setMapType(mSM.getSavedMapType());
+            CameraUpdate update = CameraUpdateFactory.newCameraPosition(position);
+            mMap.moveCamera(update);
+        }
     }
 }
