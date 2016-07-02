@@ -26,6 +26,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.motthoidecode.findplacesnearby.R;
 
 import model.MapStateManager;
+import utils.Util;
 
 /**
  * Created by Administrator on 6/30/2016.
@@ -118,7 +119,15 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Locati
             return;
         }
         mMap.setMyLocationEnabled(true);
-        mHandler.postDelayed(mGetMyLocation, 100);
+        Bundle b = this.getArguments();
+        if (b.getBoolean(Util.KEY_OPEN_MAPS_FOR_THE_FIRST_TIME, false)) {
+            mCurrentLocation = null;
+            mHandler.postDelayed(mGetMyLocation, 100);
+        }
+    }
+
+    public void clearMap() {
+        mMap.clear();
     }
 
     private void getSavedMapState() {
