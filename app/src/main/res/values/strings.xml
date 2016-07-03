@@ -1,4 +1,44 @@
 <resources>
-    <string name="app_name">Find Places Nearby</string>
-    <string name="title_activity_maps">Find Places</string>
+    <string name="app_name">FindPlaces</string>
+    <string name="title_activity_maps">FindPlaces</string>
+    <string name="title_activity_settings">Thiết lập</string>
+    <string name="title_activity_my_places">Địa điểm của tôi</string>
+    <string name="title_activity_add_place">Thêm địa điểm</string>
+    <string name="title_activity_select_place">Chọn địa điểm</string>
+    <string name="title_activity_review">Đánh giá</string>
+    <string name="drawer_header_text">Tìm địa điểm</string>
+    <string name="nav_item_location">Thành phố: Hà Nội</string>
+    <string name="nav_item_history">Lịch sử</string>
+    <string name="nav_item_add_place">Thêm địa điểm</string>
+    <string name="login">Khách vãng lai</string>
+    <string name="nav_item_bookmark">Yêu thích</string>
+    <string name="nav_item_settings">Cài đặt</string>
+    <string name="nav_item_about">Giới thiệu</string>
+    <string name="restaurant">Restaurant</string>
+    <string name="result">Results for</string>
+    <string name="call">CALL</string>
+    <string name="website">WEBSITE</string>
+    <string name="favorite">FAVORITE</string>
+    <string name="share">SHARE</string>
+    <string name="review">REVIEW</string>
+    <string name="facebook">FACEBOOK</string>
+    <string name="current_location">Current location</string>
+    <string name="search_radius">Bán kính tìm kiếm</string>
+    <string name="place_name_star">Tên*</string>
+    <string name="place_address_star">Địa chỉ*</string>
+    <string name="place_category">Danh mục</string>
+    <string name="place_phone">Điện thoại</string>
+    <string name="place_website">Website</string>
+    <string name="select_place">Chọn một vị trí trên bản đồ</string>
+    <string name="add_picture">Thêm ảnh</string>
+    <string name="save_place">LƯU ĐỊA ĐIỂM</string>
+    <string name="delete">Xóa</string>
+    <string name="delete_message_my_place">Xóa địa điểm</string>
+    <string name="delete_message_history_place">Xóa lịch sử này</string>
+    <string name="no">Không</string>
+    <string name="yes">Có</string>
+    <string name="your_report">Nhận xét của bạn</string>
+    <string name="cancel">HỦY</string>
+    <string name="report">GỬI</string>
+
 </resources>

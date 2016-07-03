@@ -23,7 +23,7 @@ public class Util {
     public static final String ATM = "ATM";
     public static final String PETROL = "Petrol";
     public static final String EDUCATION = "Education";
-    
+
     public static final String URL_PREFIX = "http://nearby.16mb.com";
     public static final String URL_QUERY_BY_CATEGORY_ID = URL_PREFIX + "/findPlacesNearMeByCategoryId.php";
     public static final String URL_QUERY_BY_NAME = URL_PREFIX + "/findPlacesNearMeByName.php";

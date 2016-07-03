@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/menu_location"
+            android:checked="true"
+            android:icon="@drawable/new_ic_current_location"
+            android:title="@string/nav_item_location" />
+        <item
+            android:id="@+id/menu_bookmark"
+            android:icon="@drawable/new_ic_bookmark_star"
+            android:title="@string/nav_item_bookmark" />
+        <item
+            android:id="@+id/menu_history"
+            android:icon="@drawable/ic_history_gray_24dp"
+            android:title="@string/nav_item_history" />
+        <item
+            android:id="@+id/menu_add_place"
+            android:icon="@drawable/new_ic_add_place_grey600"
+            android:title="@string/nav_item_add_place" />
+    </group>
+
+    <item android:title="">
+        <menu>
+            <item
+                android:id="@+id/menu_settings"
+                android:icon="@drawable/ic_settings_gray_24dp"
+                android:title="@string/nav_item_settings" />
+            <item
+                android:id="@+id/menu_about"
+                android:icon="@drawable/ic_info"
+                android:title="@string/nav_item_about" />
+        </menu>
+    </item>
+
+</menu>
