@@ -1,6 +1,7 @@
 package fragments;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Criteria;
@@ -23,6 +24,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.motthoidecode.findplacesnearby.MapsActivity;
 import com.motthoidecode.findplacesnearby.R;
 
 import model.MapStateManager;
@@ -38,6 +40,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Locati
     private static final long MIN_TIME = 400;
 
     private static GoogleMap mMap;
+    private MapsActivity mMapsActivity;
 
     private Location mCurrentLocation;
     private LocationManager mLocationManager;
@@ -60,12 +63,19 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Locati
                     // Add a marker in current Location and move the captureImage
                     LatLng mLatLng = new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude());
                     mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mLatLng, DEFAULT_ZOOM));
+                    mMapsActivity.setCurrentLocation(new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude()));
                 }
             }
         }
     };
 
     public MapsFragment() {
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        mMapsActivity = (MapsActivity) activity;
     }
 
     @Override
@@ -114,6 +124,27 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Locati
         super.onDestroy();
     }
 
+    @Override
+    public void onLocationChanged(Location location) {
+        // Save maps state
+        if (mMap != null) {
+            MapStateManager mSM = new MapStateManager(getContext());
+            mSM.saveMapState(mMap);
+        }
+        mCurrentLocation = location;
+        mMapsActivity.setCurrentLocation(new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude()));
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {}
+
+    @Override
+    public void onProviderEnabled(String provider) {}
+
+    @Override
+    public void onProviderDisabled(String provider) {}
+
+
     private void setUpMap() {
         if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
@@ -145,22 +176,4 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Locati
         }
     }
 
-    @Override
-    public void onLocationChanged(Location location) {
-        // Save maps state
-        if (mMap != null) {
-            MapStateManager mSM = new MapStateManager(getContext());
-            mSM.saveMapState(mMap);
-        }
-        mCurrentLocation = location;
-    }
-
-    @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {}
-
-    @Override
-    public void onProviderEnabled(String provider) {}
-
-    @Override
-    public void onProviderDisabled(String provider) {}
 }
