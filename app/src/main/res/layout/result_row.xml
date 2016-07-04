@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:background="@color/colorWhite"
+    android:padding="@dimen/activity_horizontal_padding">
+
+    <ImageView
+        android:id="@+id/ivPlace"
+        android:layout_width="@dimen/width_image_view_result"
+        android:layout_height="@dimen/height_image_view_result" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingLeft="@dimen/activity_horizontal_padding"
+        android:orientation="vertical">
+        <TextView
+            android:id="@+id/tvPlaceName"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:maxLines="1"
+            android:textStyle="bold"
+            android:gravity="center_vertical"
+            android:layout_weight="1"
+            android:text="Ten nha hang"/>
+        <TextView
+            android:id="@+id/tvPlaceAddress"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:maxLines="1"
+            android:gravity="center_vertical"
+            android:text="Dia chi"/>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
+            <ImageView
+                android:id="@+id/ivCategory"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_category_green_36dp_restaurant"
+                />
+            <TextView
+                android:id="@+id/tvPlaceCategory"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_toRightOf="@+id/ivCategory"
+                android:layout_marginLeft="@dimen/activity_horizontal_padding"
+                android:gravity="center_vertical"
+                android:text="@string/restaurant"/>
+            <TextView
+                android:id="@+id/tvPlaceDistance"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="600 m"
+                android:gravity="center_vertical"
+                android:layout_alignParentEnd="true"/>
+        </RelativeLayout>
+    </LinearLayout>
+</LinearLayout>

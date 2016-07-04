@@ -8,6 +8,7 @@ import android.support.design.widget.NavigationView;
 import android.support.v7.widget.SearchView;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -17,7 +18,7 @@ import fragments.MyFragmentManager;
 import fragments.SearchFragment;
 import utils.Util;
 
-public class MapsActivity extends FragmentActivity{
+public class MapsActivity extends FragmentActivity implements View.OnClickListener{
 
     private SearchView mSearchView;
     private ImageView mButtonMenu;
@@ -29,6 +30,7 @@ public class MapsActivity extends FragmentActivity{
 
 
     private boolean mIsMapsMODE = true;
+    private int mCategoryId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +53,42 @@ public class MapsActivity extends FragmentActivity{
         MyFragmentManager.displayFragment(mMapsFragment, this);
 
         addEventListener();
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.ivRestaurant:
+                mSearchView.setIconified(true);
+                hideSoftKeyboard();
+                mCategoryId = Util.ID_RESTAURANT;
+                getPlacesByCategoryId(mCategoryId);
+                break;
+            case R.id.ivCafe:
+                mSearchView.setIconified(true);
+                hideSoftKeyboard();
+                mCategoryId = Util.ID_COFFEE;
+                getPlacesByCategoryId(mCategoryId);
+                break;
+            case R.id.ivATM:
+                mSearchView.setIconified(true);
+                hideSoftKeyboard();
+                mCategoryId = Util.ID_ATM;
+                getPlacesByCategoryId(mCategoryId);
+                break;
+            case R.id.ivPetrol:
+                mSearchView.setIconified(true);
+                hideSoftKeyboard();
+                mCategoryId = Util.ID_PETROL;
+                getPlacesByCategoryId(mCategoryId);
+                break;
+            case R.id.ivEducation:
+                mSearchView.setIconified(true);
+                hideSoftKeyboard();
+                mCategoryId = Util.ID_EDUCATION;
+                getPlacesByCategoryId(mCategoryId);
+                break;
+        }
     }
 
     private void addEventListener() {
@@ -118,6 +156,14 @@ public class MapsActivity extends FragmentActivity{
         }
     }
 
+    private void getPlacesByCategoryId(int categoryId) {
+        // back to maps
+        setMapsModeDefaultInfo();
+        mSearchView.setQuery(Util.getCategoryName(categoryId), false);
+        MyFragmentManager.backToPreviousFragment();
+        showToastMessage("Result for " + Util.getCategoryName(categoryId));
+    }
+
     private void setMapsModeDefaultInfo() {
         mIsMapsMODE = true;
         mButtonMenu.setImageResource(R.drawable.button_menu);
@@ -129,4 +175,10 @@ public class MapsActivity extends FragmentActivity{
     public void showToastMessage(String msg) {
         Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
     }
+
+    private void hideSoftKeyboard() {
+        InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+        inputMethodManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
+    }
+
 }

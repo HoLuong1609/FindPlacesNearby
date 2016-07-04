@@ -41,6 +41,41 @@
 
     </LinearLayout>
 
+    <SlidingDrawer
+        android:id="@+id/slidingDrawerResults"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:content="@+id/content"
+        android:handle="@+id/tvResult"
+        android:orientation="vertical"
+        android:topOffset="@dimen/topoffset_sliding_drawer"
+        android:visibility="invisible">
+
+        <TextView
+            android:id="@+id/tvResult"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/colorWhite"
+            android:gravity="center_vertical"
+            android:padding="@dimen/activity_horizontal_padding"
+            android:text="@string/result"
+            android:textColor="@color/colorGreyBlue"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:id="@+id/content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/colorWhite"
+            android:orientation="vertical">
+
+            <ListView
+                android:id="@+id/lvResult"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+    </SlidingDrawer>
+
     <android.support.design.widget.NavigationView
         android:id="@+id/navigation_view"
         android:layout_width="wrap_content"
