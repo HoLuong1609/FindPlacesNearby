@@ -336,6 +336,13 @@ public class MapsActivity extends FragmentActivity implements View.OnClickListen
                 mSearchView.setIconified(true);
                 MyFragmentManager.backToPreviousFragment();
 
+                // show all markers in the maps
+                Bundle data = new Bundle();
+                String placeLocation = mPlaces.get(0).getLatitude() + "," + mPlaces.get(0).getLongitude();
+                data.putString(Util.KEY_PLACE_LOCATION, placeLocation);
+
+                mMapsFragment.showTheSuggestion(data);
+
                 resultTitle = "";
                 mSlidingDrawerResults.setVisibility(View.VISIBLE);
                 mSlidingDrawerResults.open();
@@ -345,6 +352,19 @@ public class MapsActivity extends FragmentActivity implements View.OnClickListen
 
 
     private void showLocationsNearMe(int categoryId) {
+
+        // show all markers in the maps
+        Bundle data = new Bundle();
+        ArrayList<String> placeLocations = new ArrayList<String>();
+        for (int i = 0; i < mPlaces.size(); i++) {
+            placeLocations.add(mPlaces.get(i).getLatitude() + "," + mPlaces.get(i).getLongitude());
+        }
+        data.putStringArrayList(Util.KEY_PLACE_LOCATIONS, placeLocations);
+        data.putInt(Util.KEY_QUERY_CATEGORY, categoryId);
+
+        mMapsFragment.showAllTheResults(data);
+
+
         resultTitle = Util.getCategoryName(categoryId);
         mSlidingDrawerResults.setVisibility(View.VISIBLE);
         mSlidingDrawerResults.open();

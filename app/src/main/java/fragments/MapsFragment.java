@@ -13,6 +13,7 @@ import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,10 +23,17 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.motthoidecode.findplacesnearby.MapsActivity;
 import com.motthoidecode.findplacesnearby.R;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import model.MapStateManager;
 import utils.Util;
@@ -38,12 +46,20 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Locati
     private static final float DEFAULT_ZOOM = 15;
     private static final int TIME_OUT = 40;
     private static final long MIN_TIME = 400;
+    private static final int PADDING = 100;
 
     private static GoogleMap mMap;
     private MapsActivity mMapsActivity;
 
     private Location mCurrentLocation;
     private LocationManager mLocationManager;
+
+    private List<MarkerOptions> mMarkersOptions = new ArrayList<MarkerOptions>();
+    private List<Marker> mListMarker;
+    private List<LatLng> mCoordinates;
+    private Marker mMarkerSelected;
+
+    private boolean mIsAnimate = false;
 
     private Handler mHandler = new Handler();
     private int count = 0;
@@ -161,6 +177,97 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Locati
         mMap.clear();
     }
 
+    public void showAllTheResults(Bundle data) {
+
+        mCurrentLocation = mMap.getMyLocation();
+        if (mCurrentLocation == null) {
+            MapStateManager mSM = new MapStateManager(getContext());
+            LatLng latLng = mSM.getSavedLatLng();
+            if (latLng != null) {
+                mCurrentLocation = new Location("");
+                mCurrentLocation.setLatitude(latLng.latitude);
+                mCurrentLocation.setLongitude(latLng.longitude);
+                mMapsActivity.setCurrentLocation(latLng);
+            }
+        }
+        if (mCurrentLocation == null)
+            return;
+
+        ArrayList<String> placeLocations = data.getStringArrayList(Util.KEY_PLACE_LOCATIONS);
+        setListCoordinates(placeLocations);
+
+        if (mCoordinates.size() > 0) {
+            mMarkersOptions.clear();
+            mMarkersOptions.add(new MarkerOptions().position(new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude())));
+            for (int i = 0; i < mCoordinates.size(); i++) {
+                if (i == 0)
+                    mMarkersOptions.add(new MarkerOptions().position(new LatLng(mCoordinates.get(i).latitude, mCoordinates.get(i).longitude)).
+                            icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_marker_poi_selected)));
+                else
+                    mMarkersOptions.add(new MarkerOptions().position(new LatLng(mCoordinates.get(i).latitude, mCoordinates.get(i).longitude)).
+                            icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_marker_poi)));
+            }
+
+            mListMarker = new ArrayList<Marker>();
+            mMap.clear();
+            for (int i = 1; i < mMarkersOptions.size(); i++) {
+                Marker marker = mMap.addMarker(mMarkersOptions.get(i).snippet(String.valueOf(i - 1)));
+                mListMarker.add(marker);
+            }
+            mMarkerSelected = mListMarker.get(0);
+
+            mIsAnimate = false;
+            zoomMapsToShowAllTheMarkers(mMarkersOptions);
+        }
+    }
+
+    public void showTheSuggestion(Bundle data) {
+
+        mCurrentLocation = mMap.getMyLocation();
+        if (mCurrentLocation == null) {
+            MapStateManager mSM = new MapStateManager(getContext());
+            LatLng latLng = mSM.getSavedLatLng();
+            if (latLng != null) {
+                mCurrentLocation = new Location("");
+                mCurrentLocation.setLatitude(latLng.latitude);
+                mCurrentLocation.setLongitude(latLng.longitude);
+                mMapsActivity.setCurrentLocation(latLng);
+            }
+        }
+        if (mCurrentLocation == null)
+            return;
+
+        String placeLocation = data.getString(Util.KEY_PLACE_LOCATION);
+        ArrayList<String> placeLocations = new ArrayList<>();
+        placeLocations.add(placeLocation);
+        Log.v("placeLocation", placeLocation + " - " + placeLocations);
+        setListCoordinates(placeLocations);
+
+        if (mCoordinates.size() > 0) {
+            mMarkersOptions.clear();
+            mMarkersOptions.add(new MarkerOptions().position(new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude())));
+            for (int i = 0; i < mCoordinates.size(); i++) {
+                if (i == 0)
+                    mMarkersOptions.add(new MarkerOptions().position(new LatLng(mCoordinates.get(i).latitude, mCoordinates.get(i).longitude)).
+                            icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_marker_poi_selected)));
+                else
+                    mMarkersOptions.add(new MarkerOptions().position(new LatLng(mCoordinates.get(i).latitude, mCoordinates.get(i).longitude)).
+                            icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_marker_poi)));
+            }
+
+            mListMarker = new ArrayList<Marker>();
+            mMap.clear();
+            for (int i = 1; i < mMarkersOptions.size(); i++) {
+                Marker marker = mMap.addMarker(mMarkersOptions.get(i).snippet(String.valueOf(i - 1)));
+                mListMarker.add(marker);
+            }
+            mMarkerSelected = mListMarker.get(0);
+
+            mIsAnimate = false;
+            zoomMapsToShowAllTheMarkers(mMarkersOptions);
+        }
+    }
+
     private void getSavedMapState() {
         MapStateManager mSM = new MapStateManager(getContext());
         CameraPosition position = mSM.getSavedCameraPosition();
@@ -174,6 +281,31 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Locati
             CameraUpdate update = CameraUpdateFactory.newCameraPosition(position);
             mMap.moveCamera(update);
         }
+    }
+
+    // parse Coordinates from ArrayList String
+    private void setListCoordinates(ArrayList<String> placeLocations) {
+        mCoordinates = new ArrayList<LatLng>();
+        for (int i = 0; i < placeLocations.size(); i++) {
+            String placeLocation = placeLocations.get(i);
+            double lat = Double.parseDouble(placeLocation.substring(0, placeLocation.indexOf(",")));
+            double lng = Double.parseDouble(placeLocation.substring(placeLocation.indexOf(",") + 1, placeLocation.length()));
+            mCoordinates.add(new LatLng(lat, lng));
+        }
+    }
+
+    private void zoomMapsToShowAllTheMarkers(List<MarkerOptions> markers) {
+        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+        for (MarkerOptions marker : markers) {
+            builder.include(marker.getPosition());
+        }
+        LatLngBounds bounds = builder.build();
+        int padding = PADDING; // offset from edges of the map in pixels
+        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngBounds(bounds, padding);
+        if (mIsAnimate)
+            mMap.animateCamera(cameraUpdate);
+        else
+            mMap.moveCamera(cameraUpdate);
     }
 
 }
