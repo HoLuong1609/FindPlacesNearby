@@ -6,9 +6,12 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.design.widget.NavigationView;
 import android.support.v7.widget.SearchView;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -22,10 +25,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
 import adapters.PlacesResultAdapter;
+import adapters.PlacesSuggestAdapter;
 import fragments.MapsFragment;
 import fragments.MyFragmentManager;
 import fragments.SearchFragment;
@@ -39,6 +45,7 @@ public class MapsActivity extends FragmentActivity implements View.OnClickListen
     private ImageView mButtonMenu;
 
     private List<Place> mPlaces;
+    private Place mPlaceSelected;
 
     private MapsFragment mMapsFragment;
     private SearchFragment mSearchFragment;
@@ -50,6 +57,7 @@ public class MapsActivity extends FragmentActivity implements View.OnClickListen
 
     private boolean mQueryTaskIsRunning = false;
     private boolean mIsMapsMODE = true;
+    private boolean mQueryByName = false;
 
     private int mCategoryId;
 
@@ -145,9 +153,13 @@ public class MapsActivity extends FragmentActivity implements View.OnClickListen
                 Place place = new Place(id, name, address, latitude, longitude, categoryId, imageUrl, website, phone, distance);
                 mPlaces.add(place);
             }
+            if (mQueryByName)
+                showListSuggestion();
+            else
                 showLocationsNearMe(mCategoryId);
         } catch (JSONException e) {
             mPlaces.clear();
+            if (!mQueryByName)
                 // null json string
                 showToastMessage("No place found!");
             e.printStackTrace();
@@ -177,6 +189,26 @@ public class MapsActivity extends FragmentActivity implements View.OnClickListen
 
                     }
                 }
+            }
+        });
+
+        searchViewEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (!mIsMapsMODE)
+                    if (s.length() == 0) {
+                        resetDataListViewSuggestion();
+                    } else {
+                        getPlacesSuggestion(s.toString());
+                    }
             }
         });
 
@@ -235,6 +267,37 @@ public class MapsActivity extends FragmentActivity implements View.OnClickListen
         }
     }
 
+    private void resetDataListViewSuggestion() {
+        mPlaces = new ArrayList<>();
+        ListView lvSuggestion = (ListView) findViewById(R.id.lvSuggestion);
+        PlacesSuggestAdapter placesSuggestAdapter = new PlacesSuggestAdapter(MapsActivity.this, R.layout.suggestion_row, mPlaces);
+        lvSuggestion.setAdapter(placesSuggestAdapter);
+    }
+
+    private void getPlacesSuggestion(String name) {
+
+        try {
+            name = URLEncoder.encode(name, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        resetDataListViewSuggestion();
+
+        if (mQueryTaskIsRunning && !mDownloadJSONStringTask.isCancelled()) {
+            mDownloadJSONStringTask.cancel(true);
+        }
+        mDownloadJSONStringTask = new DownloadJSONStringTask(MapsActivity.this);
+        name = name.replace(" ", "%20");
+        String strUrl = Util.URL_QUERY_BY_NAME + "?name=" + name +
+                "&lat=" + mCurrentLocation.latitude +
+                "&lng=" + mCurrentLocation.longitude +
+                "&distance=" + Util.getMaxDistance(this);
+        mDownloadJSONStringTask.execute(strUrl);
+
+        mQueryTaskIsRunning = true;
+        mQueryByName = true;
+    }
+
     private void getPlacesByCategoryId(int categoryId) {
         // back to maps
         setMapsModeDefaultInfo();
@@ -251,8 +314,35 @@ public class MapsActivity extends FragmentActivity implements View.OnClickListen
                 "&lng=" + mCurrentLocation.longitude +
                 "&distance=" + Util.getMaxDistance(this);
         mDownloadJSONStringTask.execute(strUrl);
+
         mQueryTaskIsRunning = true;
+        mQueryByName = false;
     }
+
+    private void showListSuggestion() {
+        ListView lvSuggestion = (ListView) findViewById(R.id.lvSuggestion);
+        PlacesSuggestAdapter placesSuggestAdapter = new PlacesSuggestAdapter(this, R.layout.suggestion_row, mPlaces);
+        lvSuggestion.setAdapter(placesSuggestAdapter);
+
+        lvSuggestion.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                mPlaceSelected = mPlaces.get(position);
+                mPlaces.clear();
+                mPlaces.add(mPlaceSelected);
+
+                // back to maps and show suggest locations
+                setMapsModeDefaultInfo();
+                mSearchView.setIconified(true);
+                MyFragmentManager.backToPreviousFragment();
+
+                resultTitle = "";
+                mSlidingDrawerResults.setVisibility(View.VISIBLE);
+                mSlidingDrawerResults.open();
+            }
+        });
+    }
+
 
     private void showLocationsNearMe(int categoryId) {
         resultTitle = Util.getCategoryName(categoryId);
