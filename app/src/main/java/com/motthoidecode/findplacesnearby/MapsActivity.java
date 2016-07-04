@@ -391,4 +391,21 @@ public class MapsActivity extends FragmentActivity implements View.OnClickListen
         inputMethodManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
     }
 
+    @Override
+    public void onBackPressed() {
+        if (mSlidingDrawerResults.getVisibility() == View.VISIBLE) {
+
+            if (mSlidingDrawerResults.isOpened())
+                mSlidingDrawerResults.close();
+            mSlidingDrawerResults.setVisibility(View.INVISIBLE);
+
+            mSearchView.setQuery("", false);
+            mSearchView.setFocusable(false);
+            mSearchView.clearFocus();
+            mSearchView.setIconified(true);
+
+            mMapsFragment.clearMap();
+        } else
+            super.onBackPressed();
+    }
 }
