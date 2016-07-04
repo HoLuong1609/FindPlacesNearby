@@ -170,6 +170,11 @@ public class MapsActivity extends FragmentActivity implements View.OnClickListen
                         mSearchView.setQuery("", false);
                         mIsMapsMODE = false;
 
+                        if (mSlidingDrawerResults.getVisibility() == View.VISIBLE) {
+                            mSlidingDrawerResults.close();
+                            mSlidingDrawerResults.setVisibility(View.INVISIBLE);
+                        }
+
                     }
                 }
             }
