@@ -237,8 +237,13 @@ public class MapsActivity extends FragmentActivity implements View.OnClickListen
     }
 
     public void onQueryPlacesComplete(String jsonStr) {
-        // substring Deprecated warning - mysql
-        jsonStr = jsonStr.substring(jsonStr.indexOf("["));
+        try {
+            // substring Deprecated warning - mysql
+            jsonStr = jsonStr.substring(jsonStr.indexOf("["));
+        }catch(Exception e){
+            showToastMessage("Null Json String!");
+            return;
+        }
         mQueryTaskIsRunning = false;
         try {
             JSONArray placesArray = new JSONArray(jsonStr);
@@ -390,7 +395,8 @@ public class MapsActivity extends FragmentActivity implements View.OnClickListen
                         showToastMessage(getString(R.string.nav_item_history));
                         break;
                     case R.id.menu_add_place:
-                        showToastMessage(getString(R.string.nav_item_add_place));
+                        Intent myPlacesIntent = new Intent(MapsActivity.this, MyPlacesActivity.class);
+                        startActivity(myPlacesIntent);
                         break;
                     case R.id.menu_about:
                         showToastMessage(getString(R.string.nav_item_about));

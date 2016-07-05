@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="administrator.example.com.findplaces.AddPlaceActivity">
+
+   <RelativeLayout
+       android:layout_width="match_parent"
+       android:layout_height="match_parent">
+
+       <TextView
+           android:id="@+id/tvPlaceName"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:layout_marginTop="@dimen/activity_vertical_margin"
+           android:text="@string/place_name_star"
+           android:textColor="@color/colorGreen"/>
+
+       <EditText
+           android:id="@+id/etPlaceName"
+           android:layout_width="match_parent"
+           android:layout_height="wrap_content"
+           android:hint="@string/place_name_star"
+           android:layout_below="@+id/tvPlaceName"/>
+       <requestFocus />
+
+       <TextView
+           android:id="@+id/tvPlaceAddress"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:layout_below="@+id/etPlaceName"
+           android:layout_marginTop="@dimen/activity_vertical_margin"
+           android:text="@string/place_address_star"
+           android:textColor="@color/colorGreen"/>
+
+       <EditText
+           android:id="@+id/etPlaceAddress"
+           android:layout_width="match_parent"
+           android:layout_height="wrap_content"
+           android:hint="@string/place_address_star"
+           android:layout_below="@+id/tvPlaceAddress"/>
+
+       <TextView
+           android:id="@+id/tvPlaceCategory"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:layout_below="@+id/etPlaceAddress"
+           android:layout_marginTop="@dimen/activity_vertical_margin"
+           android:text="@string/place_category"
+           android:textColor="@color/colorGreen"/>
+
+       <Spinner
+           android:id="@+id/spPlaceCAtegory"
+           android:layout_width="match_parent"
+           android:layout_height="wrap_content"
+           android:textAlignment="center"
+           android:layout_below="@+id/tvPlaceCategory"/>
+
+       <TextView
+           android:id="@+id/tvPlacePhone"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:layout_below="@+id/spPlaceCAtegory"
+           android:layout_marginTop="@dimen/activity_vertical_margin"
+           android:text="@string/place_phone"
+           android:textColor="@color/colorGreen"/>
+
+       <EditText
+           android:id="@+id/etPlacePhone"
+           android:layout_width="match_parent"
+           android:layout_height="wrap_content"
+           android:hint="@string/place_phone"
+           android:layout_below="@+id/tvPlacePhone"/>
+
+       <TextView
+           android:id="@+id/tvPlaceWebsite"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:layout_below="@+id/etPlacePhone"
+           android:layout_marginTop="@dimen/activity_vertical_margin"
+           android:text="@string/place_website"
+           android:textColor="@color/colorGreen"/>
+
+       <EditText
+           android:id="@+id/etPlaceWebsite"
+           android:layout_width="match_parent"
+           android:layout_height="wrap_content"
+           android:hint="@string/place_website"
+           android:layout_below="@+id/tvPlaceWebsite"/>
+
+       <TextView
+           android:id="@+id/tvSelectLocation"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:layout_below="@+id/etPlaceWebsite"
+           android:layout_marginTop="@dimen/activity_vertical_margin"
+           android:text="@string/select_place"
+           android:textColor="@color/colorGreen"/>
+
+       <com.google.android.gms.maps.MapView
+           android:id="@+id/mapView"
+           android:layout_width="match_parent"
+           android:layout_height="@dimen/height_mapview"
+           android:layout_below="@+id/tvSelectLocation"/>
+
+       <View
+           android:id="@+id/mapViewLine"
+           android:layout_width="wrap_content"
+           android:layout_below="@+id/mapView"
+           android:background="@color/colorRed"
+           android:visibility="invisible"
+           android:layout_height="3dp"/>
+
+       <TextView
+           android:id="@+id/tvAddPicture"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:layout_below="@+id/mapViewLine"
+           android:layout_marginTop="@dimen/activity_vertical_margin"
+           android:text="@string/add_picture"
+           android:textColor="@color/colorGreen"/>
+
+       <LinearLayout
+           android:id="@+id/llPicture"
+           android:layout_width="match_parent"
+           android:layout_height="@dimen/height_mapview"
+           android:orientation="horizontal"
+           android:padding="@dimen/activity_horizontal_padding"
+           android:layout_below="@+id/tvAddPicture">
+           <LinearLayout
+               android:layout_width="match_parent"
+               android:layout_height="match_parent"
+               android:padding="@dimen/activity_horizontal_padding"
+               android:orientation="vertical"
+               android:layout_weight="5">
+               <ImageView
+                   android:layout_width="match_parent"
+                   android:layout_height="wrap_content"
+                   android:onClick="captureImage"
+                   android:layout_weight="1"
+                   android:src="@drawable/ic_camera_green_32dp"/>
+               <ImageView
+                   android:layout_width="match_parent"
+                   android:layout_height="wrap_content"
+                   android:layout_weight="1"
+                   android:onClick="selectImageFromGallery"
+                   android:src="@drawable/ic_picture_green_32dp"/>
+           </LinearLayout>
+
+           <LinearLayout
+               android:layout_width="match_parent"
+               android:layout_height="match_parent"
+               android:orientation="vertical"
+               android:layout_weight="1">
+               <ImageView
+                   android:id="@+id/imageView"
+                   android:layout_width="match_parent"
+                   android:layout_height="match_parent"
+                   android:layout_weight="1"
+                   android:background="#8A8A8A"
+                   />
+               <View
+                   android:id="@+id/imageViewLine"
+                   android:layout_width="wrap_content"
+                   android:layout_below="@+id/mapView"
+                   android:background="@color/colorRed"
+                   android:visibility="invisible"
+                   android:layout_weight="1"
+                   android:layout_height="3dp"/>
+           </LinearLayout>
+
+       </LinearLayout>
+
+       <Button
+           android:id="@+id/btnSavePlace"
+           android:text="@string/save_place"
+           android:textColor="@color/colorWhite"
+           android:background="@color/colorGreen"
+           android:paddingRight="@dimen/activity_horizontal_padding"
+           android:paddingLeft="@dimen/activity_horizontal_padding"
+           android:layout_centerHorizontal="true"
+           android:onClick="savePlace"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:layout_below="@+id/llPicture"/>
+   </RelativeLayout>
+
+</ScrollView>
