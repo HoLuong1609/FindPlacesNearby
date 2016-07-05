@@ -36,6 +36,7 @@ import java.util.List;
 
 import adapters.PlacesResultAdapter;
 import adapters.PlacesSuggestAdapter;
+import databases.PlaceDbHelper;
 import direction.DirectionsJSONParserTask.OnJSONParserCompleteListener;
 import direction.MapsDirections.TRAVEL_MODES;
 import direction.MapsDirections;
@@ -171,6 +172,22 @@ public class MapsActivity extends FragmentActivity implements View.OnClickListen
                 Intent website = new Intent(Intent.ACTION_VIEW);
                 website.setData(Uri.parse("http://" + mPlaceSelected.getWebsite()));
                 startActivity(website);
+                break;
+            case R.id.ivFavorite:
+                ImageView ivFavorite = (ImageView) findViewById(R.id.ivFavorite);
+                PlaceDbHelper placeDbHelper = new PlaceDbHelper(MapsActivity.this, null);
+                Place favoritePlace = placeDbHelper.getFavoritePlace(mPlaceSelected.getId());
+                if (favoritePlace == null) {
+                    mPlaceSelected.setFavorite(1);
+                    placeDbHelper.addFavoritePlace(mPlaceSelected);
+                } else {
+                    mPlaceSelected.setFavorite(0);
+                    placeDbHelper.deleteFavoritePlace(mPlaceSelected.getId());
+                }
+                if (mPlaceSelected.getFavorite() == 1)
+                    ivFavorite.setImageResource(R.drawable.new_ic_bookmarked);
+                else
+                    ivFavorite.setImageResource(R.drawable.new_ic_bookmark_star);
                 break;
         }
     }
@@ -369,6 +386,16 @@ public class MapsActivity extends FragmentActivity implements View.OnClickListen
                 findViewById(R.id.ivCall).setOnClickListener(MapsActivity.this);
                 findViewById(R.id.ivWebsite).setOnClickListener(MapsActivity.this);
                 findViewById(R.id.ivComment).setOnClickListener(MapsActivity.this);
+
+                // favorite
+                ImageView ivFavorite = (ImageView) findViewById(R.id.ivFavorite);
+                PlaceDbHelper placeDbHelper = new PlaceDbHelper(MapsActivity.this, null);
+                Place favoritePlace = placeDbHelper.getFavoritePlace(mPlaceSelected.getId());
+                if (favoritePlace != null && favoritePlace.getFavorite() == 1)
+                    ivFavorite.setImageResource(R.drawable.new_ic_bookmarked);
+                else
+                    ivFavorite.setImageResource(R.drawable.new_ic_bookmark_star);
+                ivFavorite.setOnClickListener(MapsActivity.this);
             }
         });
 
