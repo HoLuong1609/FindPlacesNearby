@@ -45,7 +45,7 @@ import network.DownloadJSONStringTask;
 import utils.Util;
 import views.ClickableSlidingDrawer;
 
-public class MapsActivity extends FragmentActivity implements View.OnClickListener{
+public class MapsActivity extends FragmentActivity implements View.OnClickListener {
 
     private static final float ALPHA_IMAGEVIEW = 0.5f;
 
@@ -71,6 +71,7 @@ public class MapsActivity extends FragmentActivity implements View.OnClickListen
     private boolean mIsMapsMODE = true;
     private boolean mQueryByName = false;
     private boolean mIsDrivingMode;
+    private boolean mIsReverseRoute = false;
 
     private int mCategoryId;
 
@@ -144,6 +145,20 @@ public class MapsActivity extends FragmentActivity implements View.OnClickListen
                 hideSoftKeyboard();
                 mCategoryId = Util.ID_EDUCATION;
                 getPlacesByCategoryId(mCategoryId);
+                break;
+            case R.id.ivExchangeRoute:
+                if (mIsReverseRoute) {
+                    tvOrigin.setText(mPlaceSelected.getName());
+                    tvDestination.setText(getString(R.string.current_location));
+                } else {
+                    tvDestination.setText(mPlaceSelected.getName());
+                    tvOrigin.setText(getString(R.string.current_location));
+                }
+                if (mIsDrivingMode)
+                    walkingDirection(findViewById(R.id.ivDetailPlace));
+                else
+                    drivingDirection(findViewById(R.id.ivDetailPlace));
+                mIsReverseRoute = !mIsReverseRoute;
                 break;
         }
     }
@@ -378,7 +393,7 @@ public class MapsActivity extends FragmentActivity implements View.OnClickListen
 
     // onClick
     public void openMenuDrawerOrBackToMaps(View v) {
-        if (mIsMapsMODE){
+        if (mIsMapsMODE) {
             mDrawerLayout.openDrawer(GravityCompat.START);
         } else {
             // back to maps
@@ -395,7 +410,10 @@ public class MapsActivity extends FragmentActivity implements View.OnClickListen
         if (mCurrentLocation != null) {
             mIsDrivingMode = true;
             MapsDirections mapsDirections = new MapsDirections(mParserCompleteListener);
-            mapsDirections.direct(mCurrentLocation, mDestination, TRAVEL_MODES.DRIVING);
+            if (mIsReverseRoute)
+                mapsDirections.direct(mDestination, mCurrentLocation, TRAVEL_MODES.DRIVING);
+            else
+                mapsDirections.direct(mCurrentLocation, mDestination, TRAVEL_MODES.DRIVING);
             mSlidingDrawerResultsDetail.close();
             mSlidingDrawerResultsDetail.setVisibility(View.INVISIBLE);
             mSlidingDrawerDirection.setVisibility(View.VISIBLE);
@@ -407,7 +425,10 @@ public class MapsActivity extends FragmentActivity implements View.OnClickListen
         if (mIsDrivingMode) {
             if (mCurrentLocation != null) {
                 MapsDirections mapsDirections = new MapsDirections(mParserCompleteListener);
-                mapsDirections.direct(mCurrentLocation, mDestination, TRAVEL_MODES.DRIVING);
+                if (mIsReverseRoute)
+                    mapsDirections.direct(mDestination, mCurrentLocation, TRAVEL_MODES.DRIVING);
+                else
+                    mapsDirections.direct(mCurrentLocation, mDestination, TRAVEL_MODES.DRIVING);
                 btnDriving.setEnabled(false);
                 btnDriving.setAlpha(1f);
                 btnWalking.setEnabled(false);
@@ -422,7 +443,10 @@ public class MapsActivity extends FragmentActivity implements View.OnClickListen
         if (!mIsDrivingMode) {
             if (mCurrentLocation != null) {
                 MapsDirections mapsDirections = new MapsDirections(mParserCompleteListener);
-                mapsDirections.direct(mCurrentLocation, mDestination, TRAVEL_MODES.WALKING);
+                if (mIsReverseRoute)
+                    mapsDirections.direct(mDestination, mCurrentLocation, TRAVEL_MODES.WALKING);
+                else
+                    mapsDirections.direct(mCurrentLocation, mDestination, TRAVEL_MODES.WALKING);
                 btnDriving.setEnabled(false);
                 btnDriving.setAlpha(ALPHA_IMAGEVIEW);
                 btnWalking.setEnabled(false);
