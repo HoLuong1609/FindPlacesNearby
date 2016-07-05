@@ -40,6 +40,9 @@
         <activity android:name=".ReviewActivity"
             android:label="@string/title_activity_review"/>
         <activity android:name=".DisplayImageActivity" />
+        <activity
+            android:name=".SettingsActivity"
+            android:label="@string/title_activity_settings" />
     </application>
 
 </manifest>

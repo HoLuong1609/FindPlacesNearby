@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:gravity="center_horizontal" >
+
+    <NumberPicker
+        android:id="@+id/radius_picker"
+        android:layout_centerInParent="true"
+        android:layout_width="100dip"
+        android:layout_height="match_parent" />
+
+</LinearLayout>

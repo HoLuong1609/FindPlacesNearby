@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <views.NumberPickerPreferences
+        android:key="RADIUS_PICKER"
+        android:title="@string/search_radius"
+        android:icon="@drawable/ic_settings_gray_24dp"
+        android:defaultValue="5"
+        android:persistent="true"
+        />
+
+</PreferenceScreen>

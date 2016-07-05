@@ -379,7 +379,9 @@ public class MapsActivity extends FragmentActivity implements View.OnClickListen
                         showToastMessage(getString(R.string.nav_item_location));
                         break;
                     case R.id.menu_settings:
-                        showToastMessage(getString(R.string.nav_item_settings));
+                        Intent intent = new Intent();
+                        intent.setClass(MapsActivity.this, SettingsActivity.class);
+                        startActivity(intent);
                         break;
                     case R.id.menu_bookmark:
                         showToastMessage(getString(R.string.nav_item_bookmark));
