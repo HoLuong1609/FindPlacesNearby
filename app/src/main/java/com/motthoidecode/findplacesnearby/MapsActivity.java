@@ -213,6 +213,29 @@ public class MapsActivity extends FragmentActivity implements View.OnClickListen
         }
     }
 
+    public void onMapsMarkerClick(int markerPos) {
+        mPlaceSelected = mPlaces.get(markerPos);
+
+        mDestination = new LatLng(mPlaceSelected.getLatitude(), mPlaceSelected.getLongitude());
+
+        if (mSlidingDrawerResults.isOpened())
+            mSlidingDrawerResults.close();
+        if (mSlidingDrawerResults.getVisibility() == View.VISIBLE)
+            mSlidingDrawerResults.setVisibility(View.INVISIBLE);
+
+        if (mSlidingDrawerDirection.isOpened())
+            mSlidingDrawerDirection.close();
+        if (mSlidingDrawerDirection.getVisibility() == View.VISIBLE)
+            mSlidingDrawerDirection.setVisibility(View.INVISIBLE);
+
+        if (mSlidingDrawerResultsDetail.isOpened())
+            mSlidingDrawerResultsDetail.close();
+        if (mSlidingDrawerResultsDetail.getVisibility() == View.INVISIBLE)
+            mSlidingDrawerResultsDetail.setVisibility(View.VISIBLE);
+        // reopen
+        mSlidingDrawerResultsDetail.open();
+    }
+
     public void onQueryPlacesComplete(String jsonStr) {
         // substring Deprecated warning - mysql
         jsonStr = jsonStr.substring(jsonStr.indexOf("["));

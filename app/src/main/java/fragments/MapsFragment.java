@@ -44,7 +44,7 @@ import utils.Util;
 /**
  * Created by Administrator on 6/30/2016.
  */
-public class MapsFragment extends Fragment implements OnMapReadyCallback, LocationListener, OnJSONParserCompleteListener {
+public class MapsFragment extends Fragment implements OnMapReadyCallback, LocationListener, OnJSONParserCompleteListener, GoogleMap.OnMarkerClickListener {
 
     private static final float DEFAULT_ZOOM = 15;
     private static final int TIME_OUT = 40;
@@ -124,6 +124,16 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Locati
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         setUpMap();
+    }
+
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+        mMarkerSelected.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.ic_marker_poi));
+        marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.ic_marker_poi_selected));
+        mMarkerSelected = marker;
+        int markerPos = Integer.parseInt(marker.getSnippet());
+        mMapsActivity.onMapsMarkerClick(markerPos);
+        return true;
     }
 
     @Override
@@ -244,6 +254,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Locati
 
             mIsAnimate = false;
             zoomMapsToShowAllTheMarkers(mMarkersOptions);
+            mMap.setOnMarkerClickListener(this);
         }
     }
 
@@ -291,6 +302,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Locati
 
             mIsAnimate = false;
             zoomMapsToShowAllTheMarkers(mMarkersOptions);
+            mMap.setOnMarkerClickListener(this);
         }
     }
 
