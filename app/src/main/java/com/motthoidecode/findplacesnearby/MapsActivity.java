@@ -1,5 +1,7 @@
 package com.motthoidecode.findplacesnearby;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.GravityCompat;
@@ -159,6 +161,16 @@ public class MapsActivity extends FragmentActivity implements View.OnClickListen
                 else
                     drivingDirection(findViewById(R.id.ivDetailPlace));
                 mIsReverseRoute = !mIsReverseRoute;
+                break;
+            case R.id.ivCall:
+                Intent intent = new Intent(Intent.ACTION_DIAL);
+                intent.setData(Uri.parse("tel:" + mPlaceSelected.getPhone()));
+                startActivity(intent);
+                break;
+            case R.id.ivWebsite:
+                Intent website = new Intent(Intent.ACTION_VIEW);
+                website.setData(Uri.parse("http://" + mPlaceSelected.getWebsite()));
+                startActivity(website);
                 break;
         }
     }
