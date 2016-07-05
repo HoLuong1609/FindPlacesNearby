@@ -34,6 +34,9 @@ import java.util.List;
 
 import adapters.PlacesResultAdapter;
 import adapters.PlacesSuggestAdapter;
+import direction.DirectionsJSONParserTask.OnJSONParserCompleteListener;
+import direction.MapsDirections.TRAVEL_MODES;
+import direction.MapsDirections;
 import fragments.MapsFragment;
 import fragments.MyFragmentManager;
 import fragments.SearchFragment;
@@ -43,6 +46,8 @@ import utils.Util;
 import views.ClickableSlidingDrawer;
 
 public class MapsActivity extends FragmentActivity implements View.OnClickListener{
+
+    private static final float ALPHA_IMAGEVIEW = 0.5f;
 
     private SearchView mSearchView;
     private ImageView mButtonMenu;
@@ -56,20 +61,27 @@ public class MapsActivity extends FragmentActivity implements View.OnClickListen
     private NavigationView mNavigationView;
     private SlidingDrawer mSlidingDrawerResults;
     private ClickableSlidingDrawer mSlidingDrawerResultsDetail;
+    private ClickableSlidingDrawer mSlidingDrawerDirection;
     private ListView lvResult;
     private TextView tvResult;
+    private ImageView btnDriving, btnWalking, btnExchangeRoute;
+    private TextView tvOrigin, tvDestination;
 
     private boolean mQueryTaskIsRunning = false;
     private boolean mIsMapsMODE = true;
     private boolean mQueryByName = false;
+    private boolean mIsDrivingMode;
 
     private int mCategoryId;
 
     private String resultTitle = "";
 
     private LatLng mCurrentLocation;
+    private LatLng mDestination;
 
     private DownloadJSONStringTask mDownloadJSONStringTask;
+
+    private OnJSONParserCompleteListener mParserCompleteListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,6 +94,7 @@ public class MapsActivity extends FragmentActivity implements View.OnClickListen
         mNavigationView = (NavigationView) findViewById(R.id.navigation_view);
         mSlidingDrawerResults = (SlidingDrawer) findViewById(R.id.slidingDrawerResults);
         mSlidingDrawerResultsDetail = (ClickableSlidingDrawer) findViewById(R.id.slidingDrawerResultsDetail);
+        mSlidingDrawerDirection = (ClickableSlidingDrawer) findViewById(R.id.slidingDrawerDirection);
         tvResult = (TextView) findViewById(R.id.tvResult);
         // ListView result for mSlidingDrawerResults
         lvResult = (ListView) findViewById(R.id.lvResult);
@@ -169,6 +182,34 @@ public class MapsActivity extends FragmentActivity implements View.OnClickListen
                 showToastMessage("No place found!");
             e.printStackTrace();
         }
+    }
+
+    public void onDirectComplete(String distance, String duration, boolean isError, boolean isNoPoints) {
+        if (mIsDrivingMode) {
+            btnDriving.setAlpha(1f);
+            btnWalking.setAlpha(ALPHA_IMAGEVIEW);
+        } else {
+            btnDriving.setAlpha(ALPHA_IMAGEVIEW);
+            btnWalking.setAlpha(1f);
+        }
+        btnDriving.setEnabled(true);
+        btnWalking.setEnabled(true);
+        if (!btnExchangeRoute.isEnabled())
+            btnExchangeRoute.setEnabled(true);
+        btnExchangeRoute.setAlpha(1f);
+        mIsDrivingMode = !mIsDrivingMode;
+
+        if (isError) {
+            showToastMessage("Error!");
+            return;
+        } else if (isNoPoints)
+            showToastMessage("No Points!");
+
+        TextView tvDistance = (TextView) findViewById(R.id.tvDistance);
+        TextView tvDuration = (TextView) findViewById(R.id.tvDuration);
+        tvDistance.setText(distance);
+        tvDuration.setText(duration);
+
     }
 
     private void addEventListener() {
@@ -263,6 +304,8 @@ public class MapsActivity extends FragmentActivity implements View.OnClickListen
 
                 mMapsFragment.setMarkerSelected(position);
 
+                mDestination = new LatLng(mPlaceSelected.getLatitude(), mPlaceSelected.getLongitude());
+
                 mSlidingDrawerResults.setVisibility(View.INVISIBLE);
                 mSlidingDrawerResults.close();
                 mSlidingDrawerResultsDetail.setVisibility(View.VISIBLE);
@@ -313,8 +356,27 @@ public class MapsActivity extends FragmentActivity implements View.OnClickListen
                 ivDetailPlaceThumb.setImageResource(Util.getImageResourceID(mPlaceSelected.getCategoryId()));
             }
         });
+
+        mSlidingDrawerDirection.setOnDrawerOpenListener(new SlidingDrawer.OnDrawerOpenListener() {
+            @Override
+            public void onDrawerOpened() {
+                btnDriving = (ImageView) findViewById(R.id.ivDriving);
+                btnWalking = (ImageView) findViewById(R.id.ivWalking);
+                btnDriving.setAlpha(1f);
+                btnWalking.setAlpha(ALPHA_IMAGEVIEW);
+
+                tvOrigin = (TextView) findViewById(R.id.tvOrigin);
+                tvDestination = (TextView) findViewById(R.id.tvDestination);
+                tvDestination.setText(mPlaceSelected.getName());
+
+                btnExchangeRoute = (ImageView) findViewById(R.id.ivExchangeRoute);
+                btnExchangeRoute.setAlpha(ALPHA_IMAGEVIEW);
+                btnExchangeRoute.setOnClickListener(MapsActivity.this);
+            }
+        });
     }
 
+    // onClick
     public void openMenuDrawerOrBackToMaps(View v) {
         if (mIsMapsMODE){
             mDrawerLayout.openDrawer(GravityCompat.START);
@@ -325,6 +387,49 @@ public class MapsActivity extends FragmentActivity implements View.OnClickListen
 
             MyFragmentManager.backToPreviousFragment();
             mMapsFragment.clearMap();
+        }
+    }
+
+    // maps directions
+    public void direct(View v) {
+        if (mCurrentLocation != null) {
+            mIsDrivingMode = true;
+            MapsDirections mapsDirections = new MapsDirections(mParserCompleteListener);
+            mapsDirections.direct(mCurrentLocation, mDestination, TRAVEL_MODES.DRIVING);
+            mSlidingDrawerResultsDetail.close();
+            mSlidingDrawerResultsDetail.setVisibility(View.INVISIBLE);
+            mSlidingDrawerDirection.setVisibility(View.VISIBLE);
+            mSlidingDrawerDirection.open();
+        }
+    }
+
+    public void drivingDirection(View v) {
+        if (mIsDrivingMode) {
+            if (mCurrentLocation != null) {
+                MapsDirections mapsDirections = new MapsDirections(mParserCompleteListener);
+                mapsDirections.direct(mCurrentLocation, mDestination, TRAVEL_MODES.DRIVING);
+                btnDriving.setEnabled(false);
+                btnDriving.setAlpha(1f);
+                btnWalking.setEnabled(false);
+                btnWalking.setAlpha(ALPHA_IMAGEVIEW);
+                btnExchangeRoute.setEnabled(false);
+                btnExchangeRoute.setAlpha(ALPHA_IMAGEVIEW);
+            }
+        }
+    }
+
+    public void walkingDirection(View v) {
+        if (!mIsDrivingMode) {
+            if (mCurrentLocation != null) {
+                MapsDirections mapsDirections = new MapsDirections(mParserCompleteListener);
+                mapsDirections.direct(mCurrentLocation, mDestination, TRAVEL_MODES.WALKING);
+                btnDriving.setEnabled(false);
+                btnDriving.setAlpha(ALPHA_IMAGEVIEW);
+                btnWalking.setEnabled(false);
+                btnWalking.setAlpha(1f);
+                btnExchangeRoute.setEnabled(false);
+                btnExchangeRoute.setAlpha(ALPHA_IMAGEVIEW);
+            }
         }
     }
 
@@ -397,6 +502,8 @@ public class MapsActivity extends FragmentActivity implements View.OnClickListen
                 mSearchView.setIconified(true);
                 MyFragmentManager.backToPreviousFragment();
 
+                // add onParserCompleteListener (for direction)
+                mParserCompleteListener = mMapsFragment;
                 // show all markers in the maps
                 Bundle data = new Bundle();
                 String placeLocation = mPlaces.get(0).getLatitude() + "," + mPlaces.get(0).getLongitude();
@@ -413,6 +520,8 @@ public class MapsActivity extends FragmentActivity implements View.OnClickListen
 
 
     private void showLocationsNearMe(int categoryId) {
+        // add OnParserCompleteListener (for direction)
+        mParserCompleteListener = mMapsFragment;
 
         // show all markers in the maps
         Bundle data = new Bundle();
@@ -441,6 +550,10 @@ public class MapsActivity extends FragmentActivity implements View.OnClickListen
 
     public void setCurrentLocation(LatLng currentLocation) {
         this.mCurrentLocation = currentLocation;
+    }
+
+    public LatLng getDestination() {
+        return mDestination;
     }
 
     public void showToastMessage(String msg) {

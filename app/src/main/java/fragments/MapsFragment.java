@@ -29,19 +29,22 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
 import com.motthoidecode.findplacesnearby.MapsActivity;
 import com.motthoidecode.findplacesnearby.R;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import direction.DirectionsJSONParserTask.OnJSONParserCompleteListener;
+import direction.DirectionsJSONParserTask;
 import model.MapStateManager;
 import utils.Util;
 
 /**
  * Created by Administrator on 6/30/2016.
  */
-public class MapsFragment extends Fragment implements OnMapReadyCallback, LocationListener {
+public class MapsFragment extends Fragment implements OnMapReadyCallback, LocationListener, OnJSONParserCompleteListener {
 
     private static final float DEFAULT_ZOOM = 15;
     private static final int TIME_OUT = 40;
@@ -84,6 +87,9 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Locati
             }
         }
     };
+
+    // For drawing direction on Map
+    private Polyline mPolyline;
 
     public MapsFragment() {
     }
@@ -160,6 +166,26 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Locati
     @Override
     public void onProviderDisabled(String provider) {}
 
+    // On Direct Complete
+    @Override
+    public void onJSONParserComplete(DirectionsJSONParserTask task) {
+        // Drawing polyline in the Google Map for the i-th route
+        if (mPolyline != null)
+            mPolyline.remove();
+        if (!task.isError() && !task.isNoPoints()) {
+            mPolyline = mMap.addPolyline(task.getPolylineOptions());
+
+            List<MarkerOptions> markers = new ArrayList<MarkerOptions>();
+            markers.add(new MarkerOptions().position(new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude())));
+            markers.add(new MarkerOptions().position(mMapsActivity.getDestination()));
+            mIsAnimate = true;
+            zoomMapsToShowAllTheMarkers(markers);
+        }
+
+        // Set OnDirectCompleteListener to MapsActivity
+        mMapsActivity.onDirectComplete(task.getDistance(), task.getDuration(), task.isError(), task.isNoPoints());
+
+    }
 
     private void setUpMap() {
         if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
