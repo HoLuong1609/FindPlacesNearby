@@ -283,6 +283,13 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Locati
         }
     }
 
+    public void setMarkerSelected(int markerPosition) {
+        mMarkerSelected.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.ic_marker_poi));
+        Marker newSelectedMarker = mListMarker.get(markerPosition);
+        newSelectedMarker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.ic_marker_poi_selected));
+        mMarkerSelected = newSelectedMarker;
+    }
+
     // parse Coordinates from ArrayList String
     private void setListCoordinates(ArrayList<String> placeLocations) {
         mCoordinates = new ArrayList<LatLng>();

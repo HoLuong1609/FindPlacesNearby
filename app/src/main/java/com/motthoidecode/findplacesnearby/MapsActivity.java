@@ -14,12 +14,14 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SlidingDrawer;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.model.LatLng;
+import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -38,6 +40,7 @@ import fragments.SearchFragment;
 import model.Place;
 import network.DownloadJSONStringTask;
 import utils.Util;
+import views.ClickableSlidingDrawer;
 
 public class MapsActivity extends FragmentActivity implements View.OnClickListener{
 
@@ -52,6 +55,7 @@ public class MapsActivity extends FragmentActivity implements View.OnClickListen
     private DrawerLayout mDrawerLayout;
     private NavigationView mNavigationView;
     private SlidingDrawer mSlidingDrawerResults;
+    private ClickableSlidingDrawer mSlidingDrawerResultsDetail;
     private ListView lvResult;
     private TextView tvResult;
 
@@ -77,6 +81,7 @@ public class MapsActivity extends FragmentActivity implements View.OnClickListen
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mNavigationView = (NavigationView) findViewById(R.id.navigation_view);
         mSlidingDrawerResults = (SlidingDrawer) findViewById(R.id.slidingDrawerResults);
+        mSlidingDrawerResultsDetail = (ClickableSlidingDrawer) findViewById(R.id.slidingDrawerResultsDetail);
         tvResult = (TextView) findViewById(R.id.tvResult);
         // ListView result for mSlidingDrawerResults
         lvResult = (ListView) findViewById(R.id.lvResult);
@@ -251,7 +256,63 @@ public class MapsActivity extends FragmentActivity implements View.OnClickListen
             }
         });
 
+        lvResult.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                mPlaceSelected = mPlaces.get(position);
 
+                mMapsFragment.setMarkerSelected(position);
+
+                mSlidingDrawerResults.setVisibility(View.INVISIBLE);
+                mSlidingDrawerResults.close();
+                mSlidingDrawerResultsDetail.setVisibility(View.VISIBLE);
+                mSlidingDrawerResultsDetail.open();
+            }
+        });
+
+        mSlidingDrawerResultsDetail.setOnDrawerOpenListener(new SlidingDrawer.OnDrawerOpenListener() {
+
+            @Override
+            public void onDrawerOpened() {
+                ImageView ivDetailPlaceThumb = (ImageView) findViewById(R.id.ivDetailPlaceThumb);
+                LinearLayout.LayoutParams param = new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT);
+                ivDetailPlaceThumb.setLayoutParams(param);
+                ivDetailPlaceThumb.setImageResource(0);
+
+                TextView tvDetailPlaceName = (TextView) findViewById(R.id.tvDetailPlaceName);
+                TextView tvDetailPlaceAddress = (TextView) findViewById(R.id.tvDetailPlaceAddress);
+                TextView tvDetailPlaceCategory = (TextView) findViewById(R.id.tvDetailPlaceCategory);
+                TextView tvDetailPlaceDistance = (TextView) findViewById(R.id.tvDetailPlaceDistance);
+                ImageView ivDetailCategory = (ImageView) findViewById(R.id.ivDetailCategory);
+                ImageView ivDetailPlace = (ImageView) findViewById(R.id.ivDetailPlace);
+
+                Picasso.with(MapsActivity.this).load(mPlaceSelected.getImageUrl()).into(ivDetailPlace);
+                tvDetailPlaceName.setText(mPlaceSelected.getName());
+                tvDetailPlaceAddress.setText(mPlaceSelected.getAddress());
+                tvDetailPlaceCategory.setText(Util.getCategoryName(mPlaceSelected.getCategoryId()));
+                ivDetailCategory.setImageResource(Util.getImageResourceID(mPlaceSelected.getCategoryId()));
+                tvDetailPlaceDistance.setText(Util.formatDistance(mPlaceSelected.getDistance()));
+
+                ivDetailPlace.setOnClickListener(MapsActivity.this);
+                findViewById(R.id.ivCall).setOnClickListener(MapsActivity.this);
+                findViewById(R.id.ivWebsite).setOnClickListener(MapsActivity.this);
+                findViewById(R.id.ivComment).setOnClickListener(MapsActivity.this);
+            }
+        });
+
+        mSlidingDrawerResultsDetail.setOnDrawerCloseListener(new SlidingDrawer.OnDrawerCloseListener() {
+            @Override
+            public void onDrawerClosed() {
+                ImageView ivDetailPlaceThumb = (ImageView) findViewById(R.id.ivDetailPlaceThumb);
+                LinearLayout.LayoutParams param = new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        LinearLayout.LayoutParams.MATCH_PARENT, 4.0f);
+                ivDetailPlaceThumb.setLayoutParams(param);
+                ivDetailPlaceThumb.setImageResource(Util.getImageResourceID(mPlaceSelected.getCategoryId()));
+            }
+        });
     }
 
     public void openMenuDrawerOrBackToMaps(View v) {
@@ -393,8 +454,16 @@ public class MapsActivity extends FragmentActivity implements View.OnClickListen
 
     @Override
     public void onBackPressed() {
-        if (mSlidingDrawerResults.getVisibility() == View.VISIBLE) {
+        if (mSlidingDrawerResultsDetail.getVisibility() == View.VISIBLE) {
+            if (mSlidingDrawerResultsDetail.isOpened())
+                mSlidingDrawerResultsDetail.close();
+            mSlidingDrawerResultsDetail.setVisibility(View.INVISIBLE);
 
+            resultTitle = tvResult.getText().toString();
+            resultTitle = resultTitle.substring(resultTitle.indexOf("\"") + 1, resultTitle.lastIndexOf("\""));
+            mSlidingDrawerResults.setVisibility(View.VISIBLE);
+            mSlidingDrawerResults.open();
+        } else if (mSlidingDrawerResults.getVisibility() == View.VISIBLE) {
             if (mSlidingDrawerResults.isOpened())
                 mSlidingDrawerResults.close();
             mSlidingDrawerResults.setVisibility(View.INVISIBLE);
