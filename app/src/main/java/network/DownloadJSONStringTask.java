@@ -19,9 +19,15 @@ import java.net.URL;
 public class DownloadJSONStringTask extends AsyncTask<String, Void, String> {
 
     private MapsActivity mActivity;
+    private boolean mIsForReviewing = false;
 
     public DownloadJSONStringTask(MapsActivity mapsActivity) {
         this.mActivity = mapsActivity;
+    }
+
+    public DownloadJSONStringTask(MapsActivity mapsActivity, boolean isForReviewing) {
+        this.mActivity = mapsActivity;
+        mIsForReviewing = isForReviewing;
     }
 
     @Override
@@ -42,6 +48,9 @@ public class DownloadJSONStringTask extends AsyncTask<String, Void, String> {
     protected void onPostExecute(String result) {
         super.onPostExecute(result);
         if (result != null) {
+            if (mIsForReviewing)
+                mActivity.onGetReviewComplete(result);
+            else
                 mActivity.onQueryPlacesComplete(result);
         } else{
                 mActivity.showToastMessage("Null Json String");

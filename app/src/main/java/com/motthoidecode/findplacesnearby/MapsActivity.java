@@ -3,10 +3,10 @@ package com.motthoidecode.findplacesnearby;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.support.design.widget.NavigationView;
 import android.support.v7.widget.SearchView;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -38,8 +38,8 @@ import adapters.PlacesResultAdapter;
 import adapters.PlacesSuggestAdapter;
 import databases.PlaceDbHelper;
 import direction.DirectionsJSONParserTask.OnJSONParserCompleteListener;
-import direction.MapsDirections.TRAVEL_MODES;
 import direction.MapsDirections;
+import direction.MapsDirections.TRAVEL_MODES;
 import fragments.MapsFragment;
 import fragments.MyFragmentManager;
 import fragments.SearchFragment;
@@ -51,6 +51,8 @@ import views.ClickableSlidingDrawer;
 public class MapsActivity extends FragmentActivity implements View.OnClickListener {
 
     private static final float ALPHA_IMAGEVIEW = 0.5f;
+    private static final int REQUEST_CODE_OPEN_REPORT_ACTIVITY = 1;
+    public static final int RESULT_CODE_ADD_REVIEW_OK = 2;
 
     private SearchView mSearchView;
     private ImageView mButtonMenu;
@@ -114,6 +116,15 @@ public class MapsActivity extends FragmentActivity implements View.OnClickListen
         MyFragmentManager.displayFragment(mMapsFragment, this);
 
         addEventListener();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_CODE_OPEN_REPORT_ACTIVITY && resultCode == RESULT_CODE_ADD_REVIEW_OK) {
+            DownloadJSONStringTask task = new DownloadJSONStringTask(this, true);
+            task.execute(Util.URL_GET_ALL_REVIEWS_BY_PLACE_ID + "?placeId=" + mPlaceSelected.getId());
+        }
     }
 
     @Override
@@ -189,6 +200,11 @@ public class MapsActivity extends FragmentActivity implements View.OnClickListen
                 else
                     ivFavorite.setImageResource(R.drawable.new_ic_bookmark_star);
                 break;
+            case R.id.ivComment:
+                Intent reviewIntent = new Intent(MapsActivity.this, ReviewActivity.class);
+                reviewIntent.putExtra(Util.KEY_ID, mPlaceSelected.getId());
+                startActivityForResult(reviewIntent, REQUEST_CODE_OPEN_REPORT_ACTIVITY);
+                break;
         }
     }
 
@@ -254,6 +270,29 @@ public class MapsActivity extends FragmentActivity implements View.OnClickListen
         tvDistance.setText(distance);
         tvDuration.setText(duration);
 
+    }
+
+    public void onGetReviewComplete(String jsonStr) {
+        if (jsonStr.contains("null"))
+            jsonStr = "[]";
+        else
+            // substring Deprecated warning - mysql
+            jsonStr = jsonStr.substring(jsonStr.indexOf("["));
+        StringBuilder strBuilder = new StringBuilder();
+        try {
+            JSONArray reviewsArray = new JSONArray(jsonStr);
+            for (int i = 0; i < reviewsArray.length(); i++) {
+                JSONObject placeObject = reviewsArray.getJSONObject(i);
+                String content = placeObject.getString(Util.KEY_CONTENT);
+                strBuilder.append("- " + content + "\n");
+            }
+            if (mSlidingDrawerResultsDetail.isOpened() && mSlidingDrawerResultsDetail.getVisibility() == View.VISIBLE) {
+                TextView tvComment = (TextView) findViewById(R.id.tvComment);
+                tvComment.setText(strBuilder.toString());
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     private void addEventListener() {
@@ -396,6 +435,10 @@ public class MapsActivity extends FragmentActivity implements View.OnClickListen
                 else
                     ivFavorite.setImageResource(R.drawable.new_ic_bookmark_star);
                 ivFavorite.setOnClickListener(MapsActivity.this);
+
+                // get review
+                DownloadJSONStringTask task = new DownloadJSONStringTask(MapsActivity.this, true);
+                task.execute(Util.URL_GET_ALL_REVIEWS_BY_PLACE_ID + "?placeId=" + mPlaceSelected.getId());
             }
         });
 

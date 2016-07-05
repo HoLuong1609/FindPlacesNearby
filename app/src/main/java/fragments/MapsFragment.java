@@ -36,8 +36,8 @@ import com.motthoidecode.findplacesnearby.R;
 import java.util.ArrayList;
 import java.util.List;
 
-import direction.DirectionsJSONParserTask.OnJSONParserCompleteListener;
 import direction.DirectionsJSONParserTask;
+import direction.DirectionsJSONParserTask.OnJSONParserCompleteListener;
 import model.MapStateManager;
 import utils.Util;
 
