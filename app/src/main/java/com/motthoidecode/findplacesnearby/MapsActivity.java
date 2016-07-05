@@ -1,5 +1,6 @@
 package com.motthoidecode.findplacesnearby;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -7,6 +8,7 @@ import android.support.design.widget.NavigationView;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.SearchView;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -75,6 +77,7 @@ public class MapsActivity extends FragmentActivity implements View.OnClickListen
     private boolean mQueryTaskIsRunning = false;
     private boolean mIsMapsMODE = true;
     private boolean mIsBookMarkMode = false;
+    private boolean mIsHistoryMode = false;
     private boolean mQueryByName = false;
     private boolean mIsDrivingMode;
     private boolean mIsReverseRoute = false;
@@ -431,7 +434,42 @@ public class MapsActivity extends FragmentActivity implements View.OnClickListen
                         mSlidingDrawerResults.open();
                         break;
                     case R.id.menu_history:
-                        showToastMessage(getString(R.string.nav_item_history));
+                        mIsHistoryMode = true;
+                        PlaceDbHelper historyPlaceDbHelper = new PlaceDbHelper(MapsActivity.this, null);
+                        mPlaces = historyPlaceDbHelper.getListHistoryPlaces();
+
+                        // calculate distances
+                        if (mCurrentLocation != null) {
+                            for (int i = 0; i < mPlaces.size(); i++) {
+                                Place place = mPlaces.get(i);
+                                place.setDistance(Util.getDistanceFromLatLonInKm(place.getLatitude(), place.getLongitude(), mCurrentLocation.latitude, mCurrentLocation.longitude));
+                            }
+                        }
+                        // add onParserCompleteListener (for direction)
+                        mParserCompleteListener = mMapsFragment;
+                        // show all markers in the maps
+                        Bundle historyData = new Bundle();
+                        ArrayList<String> historyPlaceLocations = new ArrayList<String>();
+                        for (int i = 0; i < mPlaces.size(); i++) {
+                            historyPlaceLocations.add(mPlaces.get(i).getLatitude() + "," + mPlaces.get(i).getLongitude());
+                        }
+                        historyData.putStringArrayList(Util.KEY_PLACE_LOCATIONS, historyPlaceLocations);
+
+                        mMapsFragment.showAllTheResults(historyData);
+
+                        if (mSlidingDrawerResults.isOpened())
+                            mSlidingDrawerResults.close();
+                        if (mSlidingDrawerResultsDetail.isOpened())
+                            mSlidingDrawerResultsDetail.close();
+                        if (mSlidingDrawerDirection.isOpened())
+                            mSlidingDrawerDirection.close();
+
+                        mSlidingDrawerDirection.setVisibility(View.INVISIBLE);
+                        mSlidingDrawerResultsDetail.setVisibility(View.INVISIBLE);
+                        // reopen slidingDrawerResults
+                        mSlidingDrawerResults.setVisibility(View.VISIBLE);
+                        resultTitle = getString(R.string.nav_item_history);
+                        mSlidingDrawerResults.open();
                         break;
                     case R.id.menu_add_place:
                         Intent myPlacesIntent = new Intent(MapsActivity.this, MyPlacesActivity.class);
@@ -468,6 +506,63 @@ public class MapsActivity extends FragmentActivity implements View.OnClickListen
                 mSlidingDrawerResults.close();
                 mSlidingDrawerResultsDetail.setVisibility(View.VISIBLE);
                 mSlidingDrawerResultsDetail.open();
+
+                // saving to history Places
+                PlaceDbHelper historyPlaceDbHelper = new PlaceDbHelper(MapsActivity.this, null);
+                Place historyPlace = historyPlaceDbHelper.getHistoryPlace(mPlaceSelected.getId());
+                if (historyPlace != null) {
+                    historyPlaceDbHelper.deleteHistoryPlace(mPlaceSelected.getId());
+                }
+                historyPlaceDbHelper.addHistoryPlace(mPlaceSelected);
+            }
+        });
+
+        // delete history Place
+        lvResult.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                if (mIsHistoryMode) {
+                    final Place place = mPlaces.get(position);
+                    AlertDialog.Builder b = new AlertDialog.Builder(MapsActivity.this);
+                    b.setTitle(R.string.delete).setMessage(getString(R.string.delete_message_history_place) + " - " + place.getName() + " ?")
+                            .setIcon(android.R.drawable.ic_delete)
+                            .setNegativeButton(R.string.no, null)
+                            .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    PlaceDbHelper historyPlaceDbHelper = new PlaceDbHelper(MapsActivity.this, null);
+                                    if (historyPlaceDbHelper.deleteHistoryPlace(place.getId()) > 0) {
+                                        showToastMessage("Đã xóa");
+                                        mPlaces = historyPlaceDbHelper.getListHistoryPlaces();
+
+                                        // calculate distances
+                                        if (mCurrentLocation != null) {
+                                            for (int j = 0; j < mPlaces.size(); j++) {
+                                                Place place = mPlaces.get(j);
+                                                place.setDistance(Util.getDistanceFromLatLonInKm(place.getLatitude(), place.getLongitude(), mCurrentLocation.latitude, mCurrentLocation.longitude));
+                                            }
+                                        }
+                                        // add onParserCompleteListener (for direction)
+                                        mParserCompleteListener = mMapsFragment;
+                                        // show all markers in the maps
+                                        Bundle historyData = new Bundle();
+                                        ArrayList<String> historyPlaceLocations = new ArrayList<String>();
+                                        for (int j = 0; j < mPlaces.size(); j++) {
+                                            historyPlaceLocations.add(mPlaces.get(j).getLatitude() + "," + mPlaces.get(j).getLongitude());
+                                        }
+                                        historyData.putStringArrayList(Util.KEY_PLACE_LOCATIONS, historyPlaceLocations);
+
+                                        mMapsFragment.showAllTheResults(historyData);
+                                        PlacesResultAdapter placesResultAdapter = new PlacesResultAdapter(MapsActivity.this, R.layout.result_row, mPlaces);
+                                        lvResult.setAdapter(placesResultAdapter);
+                                    } else
+                                        showToastMessage("Lỗi xóa lịch sử");
+                                }
+                            });
+                    b.create().show();
+
+                }
+                return false;
             }
         });
 
@@ -752,6 +847,9 @@ public class MapsActivity extends FragmentActivity implements View.OnClickListen
             if (mIsBookMarkMode) {
                 PlaceDbHelper placeDbHelper = new PlaceDbHelper(MapsActivity.this, null);
                 mPlaces = placeDbHelper.getListFavoritePlaces();
+            } else if (mIsHistoryMode) {
+                PlaceDbHelper placeDbHelper = new PlaceDbHelper(MapsActivity.this, null);
+                mPlaces = placeDbHelper.getListHistoryPlaces();
             }
             if (mSlidingDrawerResultsDetail.isOpened())
                 mSlidingDrawerResultsDetail.close();
@@ -775,6 +873,8 @@ public class MapsActivity extends FragmentActivity implements View.OnClickListen
 
             if (mIsBookMarkMode)
                 mIsBookMarkMode = false;
+            if (mIsHistoryMode)
+                mIsHistoryMode = false;
         } else if (mSlidingDrawerDirection.getVisibility() == View.VISIBLE) {
 
             if (mSlidingDrawerDirection.isOpened())
