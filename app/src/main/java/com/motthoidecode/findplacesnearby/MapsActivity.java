@@ -698,6 +698,15 @@ public class MapsActivity extends FragmentActivity implements View.OnClickListen
             mSearchView.setIconified(true);
 
             mMapsFragment.clearMap();
+        } else if (mSlidingDrawerDirection.getVisibility() == View.VISIBLE) {
+
+            if (mSlidingDrawerDirection.isOpened())
+                mSlidingDrawerDirection.close();
+            mSlidingDrawerDirection.setVisibility(View.INVISIBLE);
+
+            mSlidingDrawerResultsDetail.setVisibility(View.VISIBLE);
+            mSlidingDrawerResultsDetail.open();
+
         } else
             super.onBackPressed();
     }
