@@ -74,6 +74,7 @@ public class MapsActivity extends FragmentActivity implements View.OnClickListen
 
     private boolean mQueryTaskIsRunning = false;
     private boolean mIsMapsMODE = true;
+    private boolean mIsBookMarkMode = false;
     private boolean mQueryByName = false;
     private boolean mIsDrivingMode;
     private boolean mIsReverseRoute = false;
@@ -349,6 +350,9 @@ public class MapsActivity extends FragmentActivity implements View.OnClickListen
                             mSlidingDrawerResults.setVisibility(View.INVISIBLE);
                         }
 
+                        if (mIsBookMarkMode)
+                            mIsBookMarkMode = false;
+
                     }
                 }
             }
@@ -389,7 +393,42 @@ public class MapsActivity extends FragmentActivity implements View.OnClickListen
                         startActivity(intent);
                         break;
                     case R.id.menu_bookmark:
-                        showToastMessage(getString(R.string.nav_item_bookmark));
+                        mIsBookMarkMode = true;
+                        PlaceDbHelper favoritePlaceDbHelper = new PlaceDbHelper(MapsActivity.this, null);
+                        mPlaces = favoritePlaceDbHelper.getListFavoritePlaces();
+
+                        // calculate distances
+                        if (mCurrentLocation != null) {
+                            for (int i = 0; i < mPlaces.size(); i++) {
+                                Place place = mPlaces.get(i);
+                                place.setDistance(Util.getDistanceFromLatLonInKm(place.getLatitude(), place.getLongitude(), mCurrentLocation.latitude, mCurrentLocation.longitude));
+                            }
+                        }
+                        // add onParserCompleteListener (for direction)
+                        mParserCompleteListener = mMapsFragment;
+                        // show all markers in the maps
+                        Bundle favoriteData = new Bundle();
+                        ArrayList<String> favoritePlaceLocations = new ArrayList<String>();
+                        for (int i = 0; i < mPlaces.size(); i++) {
+                            favoritePlaceLocations.add(mPlaces.get(i).getLatitude() + "," + mPlaces.get(i).getLongitude());
+                        }
+                        favoriteData.putStringArrayList(Util.KEY_PLACE_LOCATIONS, favoritePlaceLocations);
+
+                        mMapsFragment.showAllTheResults(favoriteData);
+
+                        if (mSlidingDrawerResults.isOpened())
+                            mSlidingDrawerResults.close();
+                        if (mSlidingDrawerResultsDetail.isOpened())
+                            mSlidingDrawerResultsDetail.close();
+                        if (mSlidingDrawerDirection.isOpened())
+                            mSlidingDrawerDirection.close();
+
+                        mSlidingDrawerDirection.setVisibility(View.INVISIBLE);
+                        mSlidingDrawerResultsDetail.setVisibility(View.INVISIBLE);
+                        // reopen slidingDrawerResults
+                        mSlidingDrawerResults.setVisibility(View.VISIBLE);
+                        resultTitle = getString(R.string.nav_item_bookmark);
+                        mSlidingDrawerResults.open();
                         break;
                     case R.id.menu_history:
                         showToastMessage(getString(R.string.nav_item_history));
@@ -710,6 +749,10 @@ public class MapsActivity extends FragmentActivity implements View.OnClickListen
     @Override
     public void onBackPressed() {
         if (mSlidingDrawerResultsDetail.getVisibility() == View.VISIBLE) {
+            if (mIsBookMarkMode) {
+                PlaceDbHelper placeDbHelper = new PlaceDbHelper(MapsActivity.this, null);
+                mPlaces = placeDbHelper.getListFavoritePlaces();
+            }
             if (mSlidingDrawerResultsDetail.isOpened())
                 mSlidingDrawerResultsDetail.close();
             mSlidingDrawerResultsDetail.setVisibility(View.INVISIBLE);
@@ -729,6 +772,9 @@ public class MapsActivity extends FragmentActivity implements View.OnClickListen
             mSearchView.setIconified(true);
 
             mMapsFragment.clearMap();
+
+            if (mIsBookMarkMode)
+                mIsBookMarkMode = false;
         } else if (mSlidingDrawerDirection.getVisibility() == View.VISIBLE) {
 
             if (mSlidingDrawerDirection.isOpened())
