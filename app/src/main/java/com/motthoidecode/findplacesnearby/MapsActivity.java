@@ -205,6 +205,11 @@ public class MapsActivity extends FragmentActivity implements View.OnClickListen
                 reviewIntent.putExtra(Util.KEY_ID, mPlaceSelected.getId());
                 startActivityForResult(reviewIntent, REQUEST_CODE_OPEN_REPORT_ACTIVITY);
                 break;
+            case R.id.ivDetailPlace:   // Display Image of Place
+                Intent i = new Intent(MapsActivity.this, DisplayImageActivity.class);
+                i.putExtra(Util.KEY_IMAGE_URL, mPlaceSelected.getImageUrl());
+                startActivity(i);
+                break;
         }
     }
 
